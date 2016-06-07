@@ -166,7 +166,8 @@ var Tasks = React.createClass({
               saveTag={this.saveTag}
               removeTag={this.removeTag}
               onSubmit={this.onSubmit}
-              query={this.state.query} />
+              query={this.state.query} 
+              context={this.props.context} />
 
           {this.state.all.length > 3 ? this.addActivityButton() : ''}
           {tasks}

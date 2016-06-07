@@ -4,6 +4,9 @@ var MyTextField = require('../Formsy/MyTextField.jsx')
 var Tags = require('../Tags/Tags.jsx')
 var NavLink = require('fluxible-router').NavLink
 
+var TaskSearchInput = require('./TaskSearchInput.jsx')
+var navigateAction = require('fluxible-router').navigateAction
+
 var TaskFilters = React.createClass({
 
   propTypes: {
@@ -59,8 +62,17 @@ var TaskFilters = React.createClass({
       //place: place
     //}))
   },
+  
+  selectActivity: function (activityId) {
+    this.props.context.executeAction(navigateAction, {url: '/zadania/'+activityId})
+  },
 
   render: function () {
+  
+      var searchStyle = {
+        position: 'relative'
+      }
+
 
     //var filterByPlace = <div>
                           //<Formsy.Form>
@@ -154,7 +166,15 @@ var TaskFilters = React.createClass({
     }
 
     return (
-      <div>{filters}</div>
+      <div>
+        <div id="task-search-row">
+          <div id="task-search">
+            <TaskSearchInput id="form" className="form menu-search-box" selectActivity={this.selectActivity}/>
+            <input src="/img/search.svg" id="task-search-submit" type="image" />
+          </div>
+        </div>
+        {filters}
+      </div>
     )
 
   }
