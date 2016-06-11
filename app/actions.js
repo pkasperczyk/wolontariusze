@@ -5,6 +5,9 @@ var VolunteerStore = require('./stores/Volunteer')
 var navigateAction = require('fluxible-router').navigateAction
 var request = require('superagent')
 
+// ilość zadań na stronie (do paginacji)
+var TASKS_PER_PAGE = 5
+
 module.exports = {
 
   showIndex: function(context, payload, cb) {
@@ -221,13 +224,15 @@ module.exports = {
       query : query
     }
 
+    var page = (!!state.page) ? state.page : 1
     var payload = {
       query: params,
       config: {
-        size: 50
+        size: (page == -1) ? 50 : TASKS_PER_PAGE,
+        from: (page == -1) ? 0 : (page-1)*TASKS_PER_PAGE
       }
     }
-
+    console.log(payload)
     // Pobiera zadania z elastic searcha
     context.service.create('ActivitiesES', payload.config, payload.query, function (err, data) {
       if(err) { debug(err) }

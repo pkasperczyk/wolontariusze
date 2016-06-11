@@ -34,11 +34,13 @@ var Activities = module.exports = {
       index: 'sdm',
       type: 'activity',
       body: body,
-      size: params.size
+      size: params.size,
+      from: params.from
     }
 
     client.search(query)
       .then(function (resp) {
+        var totalHits = resp.hits.total
         var hits = resp.hits.hits.map(function(hit) {
           return hit._source.doc
         })
@@ -69,6 +71,7 @@ var Activities = module.exports = {
                     ])
                   })
                   callback(null, hits.map(function(hit) {
+                    hit.totalHits = totalHits
                     hit.created_by = map[hit.created_by] || {}
                     return hit
                   }))
