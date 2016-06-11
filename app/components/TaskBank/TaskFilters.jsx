@@ -109,7 +109,8 @@ var TaskFilters = React.createClass({
     var tags = this.props.query.tags || []
     var filterByTimeState
     var filterByAvailabilityState
-    if (this.props.query.created_by && this.props.query.created_by.length>0) {
+    if ( (this.props.query.volunteer && this.props.query.volunteer.length>0) ||
+         (this.props.query.created_by && this.props.query.created_by.length>0) ) {
       filterByTimeState = <div>
                               <span>Stan czasowy</span>
                               <select name="timeState" selected={this.props.query.timeState || ''} onChange={this.props.handleChange} >

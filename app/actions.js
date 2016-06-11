@@ -135,30 +135,27 @@ module.exports = {
       ]
     }
 
-    var availableQuery = {
+    var notAvailableQuery = {
       term: {
         'doc.limit_reached': true
       }
     }
 
-    //Jeżeli otwarta jest zakładka Bank Pracy, Biorę Udział w w to potrzeba zwrócić trwające i wolne zadania
-    //a w zakładce Moje Zadania zwracamy wszystkie lub wybrane
-
-    if(!state.created_by) {
-      must_not.push(finishedQuery)
-      must_not.push(availableQuery)
-    } else {
+    if(!!state.created_by || !!state.volunteer) { //zakładka Biorę udział w, Moje Zadania 
+      if(state.availabilityState == 'wolne') {
+        must_not.push(notAvailableQuery)
+      } else if (state.availabilityState == 'pelne') {
+        must.push(notAvailableQuery)
+      }
+      
       if(state.timeState == 'trwajace') {
         must_not.push(finishedQuery)
       } else if (state.timeState == 'zakonczone') {
         must.push(finishedQuery)
-      }
-
-      if(state.availabilityState == 'wolne') {
-        must_not.push(availableQuery)
-      } else if (state.availabilityState == 'pelne') {
-        must.push(availableQuery)
-      }
+      } 
+    } else {    //zakładka BankPracy
+      must_not.push(finishedQuery)  
+      must_not.push(notAvailableQuery)  
     }
 
     if(state.created_by) {
