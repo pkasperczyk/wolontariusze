@@ -1,9 +1,13 @@
 var React = require('react')
 var AutoSuggest = require('react-autosuggest')
-//var dbConf = configuration.es
-var env = process.env.NODE_ENV || 'development'
 
 var TaskSearchInput = React.createClass ({
+
+  propTypes: {
+    id: React.PropTypes.string,
+    className: React.PropTypes.string,
+    selectActivity: React.PropTypes.function
+  },
 
   getInitialState: function () {
     return {
@@ -13,7 +17,7 @@ var TaskSearchInput = React.createClass ({
   },
 
   getSuggestions: function(value) {
-  
+
     // szukane słowa będą oddzielone spacją,
     // zakładam, że wszystkie szukane słowa powinny się znaleźć w description (stąd minimum_should_match),
     // lub wystarczy, że tylko jedno słowo znajdzie się w tytule. Tytuł wg mnie jest ważniejszy od description, dlatego
@@ -22,24 +26,24 @@ var TaskSearchInput = React.createClass ({
       nested: {
         path: 'doc',
         query: {
-            or: [
-                { 
-                  match: {
-                    "doc.name": {
-                      query: value,
-                      boost: 1000,
-                    } 
-                  }
-                },
-                {
-                  match: {
-                    "doc.description": {
-                      query: value,
-                      minimum_should_match: "100%"
-                    } 
-                  } 
-                },
-              ]
+          or: [
+            {
+              match: {
+                'doc.name': {
+                  query: value,
+                  boost: 1000
+                }
+              }
+            },
+            {
+              match: {
+                'doc.description': {
+                  query: value,
+                  minimum_should_match: '100%'
+                }
+              }
+            }
+          ]
         }
       }
     }
@@ -69,7 +73,7 @@ var TaskSearchInput = React.createClass ({
           return hit._source.doc
         })
         //console.log("HITS", hits)
-        
+
         var suggestions = hits.map (function (hit) {
           return {
             name: hit.name,
@@ -97,14 +101,14 @@ var TaskSearchInput = React.createClass ({
 
   renderSuggestion: function (suggestion, input) {
 
-  
+
     var imgStyle = {
       float: 'left',
       paddingRight: '5px',
       height: '4.0rem'
     }
-    
-    
+
+
     // skomplikowane, ale z testów wynika, że działa
     // Na przykładzie:
     // text: "To jest tekst starego zadania. A to jest treść do drugiego zadania. Natomiast ten tekst należy do nowego zadania"
@@ -114,9 +118,9 @@ var TaskSearchInput = React.createClass ({
     // 2 znaki
     // searchedText oznacza pierwsze słowo z listy, w tym przypadku "nowe"
     // w polu text wyszukiwane jest PIERWSZE WYSTĄPIĘNIE ciągu znaków searchedText. Jeśli zostanie znaleziony, to przechodzimy do części 1,
-    // jeśli natomiast nie zostanie znaleziony to przechodzimy do części 2, gdzie zostanie wyświetlona początkowa treść pola text - 
+    // jeśli natomiast nie zostanie znaleziony to przechodzimy do części 2, gdzie zostanie wyświetlona początkowa treść pola text -
     // w naszym przypadku treści zadania.
-    
+
     // w części 1.1 tworzony jest kontekst dla pierwszego wystąpienia searchedText w text. Składa się on z beginText, searchTextSpan i endText
     // przykładowo moglibyśmy otrzymać:
     // beginText: "... jest treść do drugiego zadania. Natomiast ten tekst należy do "
@@ -124,55 +128,56 @@ var TaskSearchInput = React.createClass ({
     // endText: "go zadania"
     // w zależności od oryginalnej długości pola text i miejsca, w którym zostanie wykryte pierwsze wystąpienie searchedText to beginText
     // może zaczynać się "..." a endText kończyć "..."
-    
+
     //z kolei w części 1.2 metoda próbuje zaznaczyć wystąpienia wszystkich słów z searchInput tj ['nowe', 'zadanie', 'treść'], które występują
     //w beginText i endText
     //po transformacji otrzymalibyśmy:
     // beginText: "... jest <span class="task-search-highlighted-text">treść</span> do drugiego zadania. Natomiast ten tekst należy do "
     // endText: "go zadania"
-    // endText nie zmienił się ponieważ słowo "zadania" nie zawiera słowo "zadanie". 
-    
-    // jeśli searchInput byłby ['nowe', 'zadani', 'treść'], to 
+    // endText nie zmienił się ponieważ słowo "zadania" nie zawiera słowo "zadanie".
+
+    // jeśli searchInput byłby ['nowe', 'zadani', 'treść'], to
     // endText byłby "go <span class="task-search-highlighted-text">zadani</span>a"
-    
+
     // w części 1.3 następuje wyświetlenie
-    
+
     var createHtmlWithHighlightedText = function (text, searchInput) {
-    
+
       var searchWords = searchInput.split(' ').filter(function (word) { return word.length > 1 })
       //console.log(searchWords)
       var searchedText = searchWords[0]
       var maxTextLenght = 78
-      var searchTextBeginIndex = text.search(new RegExp(searchedText, "i"))
-      var searchTextEndIndex, searchTextSpan;
+      var searchTextBeginIndex = text.search(new RegExp(searchedText, 'i'))
+      var searchTextEndIndex, searchTextSpan
       if (searchTextBeginIndex != -1) {
         //Część 1.1
-        searchTextEndIndex = searchTextBeginIndex+searchedText.length;
+        searchTextEndIndex = searchTextBeginIndex+searchedText.length
         searchTextSpan = <span className="task-search-highlighted-text">{text.substring(searchTextBeginIndex, searchTextEndIndex)}</span>
-        
+
         var beginText = ''
         var endText = ''
         var more = '...'
         var leftCharactersFromBegin = searchTextBeginIndex
         var leftCharactersFromEnd = text.length-(searchTextBeginIndex+searchedText.length)
+        var leftLength
         if (text.length < maxTextLenght) {
           beginText = text.substring(0, searchTextBeginIndex)
           endText = text.substring(searchTextEndIndex)
         } else if ( leftCharactersFromBegin <= leftCharactersFromEnd && leftCharactersFromBegin+searchedText.length < maxTextLenght) {
           beginText = text.substring(0, searchTextBeginIndex)
-          var leftLength = maxTextLenght - (leftCharactersFromBegin+searchedText.length)
+          leftLength = maxTextLenght - (leftCharactersFromBegin+searchedText.length)
           endText = text.substring(searchTextEndIndex,searchTextEndIndex+leftLength)+more
         } else if ( leftCharactersFromBegin > leftCharactersFromEnd && leftCharactersFromEnd+searchedText.length < maxTextLenght)  {
-          var leftLength = maxTextLenght - (leftCharactersFromEnd+searchedText.length)
+          leftLength = maxTextLenght - (leftCharactersFromEnd+searchedText.length)
           beginText = more+text.substring(searchTextBeginIndex-leftLength, searchTextBeginIndex)
           endText = text.substring(searchTextEndIndex)
         } else {
-          var leftLength = (maxTextLenght - searchedText.length)/2
+          leftLength = (maxTextLenght - searchedText.length)/2
           beginText = more+text.substring(searchTextBeginIndex-leftLength, searchTextBeginIndex)
           endText = text.substring(searchTextEndIndex,searchTextEndIndex+leftLength)+more
         }
-            
-        //Część 1.2    
+
+        //Część 1.2
         //zaznaczenie pozostałych słów, jeśli występują w kontekście pierwszego szukanego słowa
         //poczynając od najdłuższego
         var i = 0
@@ -180,13 +185,13 @@ var TaskSearchInput = React.createClass ({
           return a.length > b.length
         } )
         for (i = 0 ; i < sortedSearchWords.length; i++ ) {
-          var regExpression = new RegExp(sortedSearchWords[i], "ig")
+          var regExpression = new RegExp(sortedSearchWords[i], 'ig')
           var replacedText = '<span class="task-search-highlighted-text">'+sortedSearchWords[i]+'</span>'
           beginText = beginText.replace(regExpression, replacedText)
           endText = endText.replace(regExpression, replacedText)
         }
 
-        
+
         //Część 1.3 - wyświetlenie
         function createBeginText () { return { __html: beginText} }
         function createEndText () { return { __html: endText} }
@@ -195,16 +200,16 @@ var TaskSearchInput = React.createClass ({
                   {searchTextSpan}
                   <span dangerouslySetInnerHTML={createEndText()} />
               </div>)
-             
+
       } else {
-      
+
           //Część 2
-          var more
-          if (text.length >= maxTextLenght) {
-            more = '...' 
-          }
-          
-          return (
+        var more
+        if (text.length >= maxTextLenght) {
+          more = '...'
+        }
+
+        return (
             <div>
               {text.substring(0,maxTextLenght)}
               {more}
@@ -212,10 +217,10 @@ var TaskSearchInput = React.createClass ({
           )
       }
     }
-    
-    var nameText = (suggestion.name.length < 38) ? suggestion.name : suggestion.name.substring(0,38)+'...' 
+
+    var nameText = (suggestion.name.length < 38) ? suggestion.name : suggestion.name.substring(0,38)+'...'
     var descriptionText = createHtmlWithHighlightedText(suggestion.description, suggestion.search_text)
-    
+
     return (
       <div key={suggestion.user_id}>
         <img src={suggestion.img_src} style={imgStyle}/>

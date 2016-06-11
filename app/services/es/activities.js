@@ -34,7 +34,7 @@ var Activities = module.exports = {
       index: 'sdm',
       type: 'activity',
       body: body,
-      size: params.size || 50
+      size: params.size || 50,
       from: params.from
     }
 

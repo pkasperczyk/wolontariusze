@@ -4,7 +4,8 @@ var Search = React.createClass({
 
   propTypes: {
     handleChange: React.PropTypes.func,
-    query: React.PropTypes.object
+    query: React.PropTypes.object,
+    submit:  React.PropTypes.func
   },
 
   render: function() {

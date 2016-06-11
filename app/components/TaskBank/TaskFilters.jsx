@@ -1,16 +1,18 @@
 var React = require('react')
 var update = require('react-addons-update')
-var MyTextField = require('../Formsy/MyTextField.jsx')
 var Tags = require('../Tags/Tags.jsx')
-var NavLink = require('fluxible-router').NavLink
-
 var TaskSearchInput = require('./TaskSearchInput.jsx')
 var navigateAction = require('fluxible-router').navigateAction
 
 var TaskFilters = React.createClass({
 
   propTypes: {
-    query: React.PropTypes.object
+    query: React.PropTypes.object,
+    context: React.PropTypes.object,
+    handleChange: React.PropTypes.function,
+    saveTag: React.PropTypes.function,
+    removeTag: React.PropTypes.function,
+    onSubmit: React.PropTypes.function
   },
 
   getInitialState: function () {
@@ -34,7 +36,7 @@ var TaskFilters = React.createClass({
     }))
   },
 
-  handlePlaceChange: function (evt) {
+  //handlePlaceChange: function (evt) {
     //var place = {}
     //var value = evt.target.value
     //value = parseFloat(value)
@@ -45,10 +47,10 @@ var TaskFilters = React.createClass({
     //this.setState(update(this.state, {
       //place: place
     //}))
-  },
+  //},
 
 
-  handlePlaceSelectChange: function (evt) {
+  //handlePlaceSelectChange: function (evt) {
     //var place = {}
     //var value = evt.target.value
     //var lat_lon = value.split(',')
@@ -61,18 +63,13 @@ var TaskFilters = React.createClass({
     //this.setState(update(this.state, {
       //place: place
     //}))
-  },
-  
+  //},
+
   selectActivity: function (activityId) {
     this.props.context.executeAction(navigateAction, {url: '/zadania/'+activityId})
   },
 
   render: function () {
-  
-      var searchStyle = {
-        position: 'relative'
-      }
-
 
     //var filterByPlace = <div>
                           //<Formsy.Form>

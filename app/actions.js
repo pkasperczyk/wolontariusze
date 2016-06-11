@@ -181,21 +181,21 @@ module.exports = {
       }
     }
 
-    if(!!state.created_by || !!state.volunteer) { //zakładka Biorę udział w, Moje Zadania 
+    if(!!state.created_by || !!state.volunteer) { //zakładka Biorę udział w, Moje Zadania
       if(state.availabilityState == 'wolne') {
         must_not.push(notAvailableQuery)
       } else if (state.availabilityState == 'pelne') {
         must.push(notAvailableQuery)
       }
-      
+
       if(state.timeState == 'trwajace') {
         must_not.push(finishedQuery)
       } else if (state.timeState == 'zakonczone') {
         must.push(finishedQuery)
-      } 
+      }
     } else {    //zakładka BankPracy
-      must_not.push(finishedQuery)  
-      must_not.push(notAvailableQuery)  
+      must_not.push(finishedQuery)
+      must_not.push(notAvailableQuery)
     }
 
     if(state.created_by) {
@@ -269,7 +269,6 @@ module.exports = {
         from: (page == -1) ? 0 : (page-1)*TASKS_PER_PAGE
       }
     }
-    console.log(payload)
     // Pobiera zadania z elastic searcha
     context.service.create('ActivitiesES', payload.config, payload.query, function (err, data) {
       if(err) { debug(err) }

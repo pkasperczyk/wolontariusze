@@ -82,7 +82,7 @@ var Bank = React.createClass({
     var query = this.state.query
     var page = Number(!!query.page ? query.page : 1)
     var totalTasks = (this.state.all[0]) ? this.state.all[0].totalHits : 0
-    console.log("total tasks", totalTasks)
+    //console.log("total tasks", totalTasks)
     var pageCount = (totalTasks > 0 ) ? Math.ceil(Number(totalTasks/TASKS_PER_PAGE)) : 1
     
     var leftIcons
