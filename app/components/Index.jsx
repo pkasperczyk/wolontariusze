@@ -20,7 +20,7 @@ var App = React.createClass({
   },
 
   componentDidMount: function() {
-    this.loadInsta()
+    //this.loadInsta()
     this.props.context.getStore(IndexStore)
       .addChangeListener(this._changeListener)
 
@@ -28,7 +28,6 @@ var App = React.createClass({
   },
 
   componentWillUnmount: function() {
-    this.loadInsta()
     this.props.context.getStore(IndexStore)
       .removeChangeListener(this._changeListener)
   },
@@ -60,7 +59,7 @@ var App = React.createClass({
     if(this.state.media){
       var media = this.state.media.map(function(img) {
         return (
-          <a href={img.link}><img src={img.images.low_resolution.url} key={img.id}/></a>
+          <a href={img.link} key={img.id}><img src={img.images.low_resolution.url}/></a>
         )
       })
       insta_content = (
@@ -231,16 +230,6 @@ var App = React.createClass({
             </div>
           </div>
         </section>
-
-        <div className="insta">
-          <div className="insta-header">
-            <img src="/img/homepage/aparacik.svg" alt="" />
-            <span>#KRAKOW2016</span>
-          </div>
-          <div className="insta-content">
-            {insta_content}
-          </div>
-        </div>
 
         {stats}
       </div>

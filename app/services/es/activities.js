@@ -34,7 +34,7 @@ var Activities = module.exports = {
       index: 'sdm',
       type: 'activity',
       body: body,
-      size: params.size,
+      size: params.size || 50
       from: params.from
     }
 
@@ -85,6 +85,7 @@ var Activities = module.exports = {
       })
       .catch(function(err) {
         console.log(err)
+        callback(err)
       })
 
   }

@@ -224,6 +224,7 @@ module.exports = function(server) {
         var json = JSON.parse(body).data[0]
         if (!json) {
           // Niepoprawny login
+          res.status(404).send({status: 'not_found'})
           return
         }
 
@@ -642,7 +643,12 @@ module.exports = function(server) {
             thumb_picture_url: data[2].Location +'?'+ data[1].ETag.replace(reg, '')
           }
           Volunteers.update({force_admin: true}, 'Volunteers', {id: req.user.id}, changes, {returnChanges: true}, function(err, result) {
-            res.status(201).send(result.changes[0].new_val)
+            if(err) {
+              res.status(500).send('Wystąpił nieznany błąd bazy danych.')
+              console.error(err)
+            } else {
+              res.status(201).send(result.changes[0].new_val)
+            }
           })
         }
       })

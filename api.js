@@ -10,6 +10,7 @@ var util = require('util')
 var bodyParser = require('body-parser')
 var expressSession = require('express-session')
 var jiff = require('jiff')
+var qs = require('qs')
 
 var env = process.env.NODE_ENV || 'development'
 var config = require('./config.json')[env]
@@ -59,6 +60,10 @@ var error = function(type, message) {
 }
 
 var server = module.exports = express();
+
+server.set('query parser', function(query, options) {
+  return qs.parse(query, { depth: 10 })
+})
 
 //server.use(express.logger());
 //server.use(express.cookieParser());
@@ -200,17 +205,19 @@ server.post('/api/v2/activities', bearer, function(req, res) {
 
 // Lista aktywności
 server.get('/api/v2/activities', bearer, function(req, res) {
-  var query = {
+  var query = req.query.query || { "match_all": {} }
+  ActivitiesES.create(req, 'ActivitiesES', {}, {
     "query": {
       "nested": {
         "path": "doc",
-        "query": req.query.query
+        "query": query
       }
     }
-  }
-  ActivitiesES.create(req, 'ActivitiesES', {}, query, {}, function (err, activities) {
-    if(err) { res.status(500).send(error(err)) }
-    else {
+  }, {}, function (err, activities) {
+    if(err) {
+      var code = err.statusCode || 500
+      res.status(code).send(error(err))
+    } else {
       res.send(success({ activities: activities }))
     }
   })
@@ -319,21 +326,27 @@ server.post('/api/v2/joints/:id', is_admin, function(req, res) {
 
 // Lista noclegowa grup pielgrzymów
 server.get('/api/v2/pilgrims', bearer, function(req, res) {
-  Pilgrims.read(req, 'Pilgrims', {}, {}, function(err, result) {
+
+  var params = {}
+  if(req.query.to) {
+    params.key = parseInt(req.query.to, 10)
+  }
+
+  Pilgrims.read(req, 'Pilgrims', params, {}, function(err, to) {
     if(err) {
       res.status(500).send(error('DBError', err))
     } else {
       if(req.query.from) { // Pobierz diff
-        Pilgrims.read(req, 'Pilgrims', { key: parseInt(req.query.from, 10) }, {}, function(err, base) {
+        Pilgrims.read(req, 'Pilgrims', { key: parseInt(req.query.from, 10) }, {}, function(err, from) {
           if(err) {
             res.status(500).send(error('DBError', err))
           } else {
-            var diff = jiff.diff(base[0], result[0])
+            var diff = jiff.diff(from[0], to[0])
             res.send(success({ diff: diff }))
           }
         })
       } else { // Pobierz ostatnią wersję
-        res.send(success({ pilgrims: result[0] }))
+        res.send(success({ pilgrims: to[0] }))
       }
     }
   })

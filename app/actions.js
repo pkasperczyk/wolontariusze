@@ -32,6 +32,46 @@ module.exports = {
     )
   },
 
+  showVolunteerActivity: function(context, payload, cb) {
+    var query = {
+      query: {
+        nested: {
+          path: 'doc',
+          query: {
+            bool: {
+              must: [
+                { term: { 'doc.volunteers': payload.id } },
+                { or: [
+                  {
+                    term: {
+                      'doc.is_archived': true
+                    }
+                  }, {
+                    range: {
+                      'doc.datetime': {
+                        lte: 'now'
+                      }
+                    }
+                  }
+                ]}
+              ]
+            }
+          }
+        }
+      }
+    }
+    context.service.create('ActivitiesES', {}, query, function (err, data) {
+      if (err) {
+        debug(err)
+      } else {
+        context.dispatch('LOAD_ACTIVITIES', {
+          all: data
+        })
+      }
+      cb(data)
+    })
+  },
+
   showVolunteers: function(context, payload, cb) {
     // Pobierz dane wolontariusza z bazy danych
     context.service.read('Volunteers', payload, {},
@@ -331,17 +371,6 @@ module.exports = {
           cb()
         })
       }
-    })
-  },
-
-  deleteActivity: function(context, payload, cb) {
-    context.service.delete('Activities', payload, {}, function (err, data) {
-      if(err) { debug(err) }
-      else {
-        context.dispatch('ACTIVITY_DELETED', data)
-        context.executeAction(navigateAction, {url: '/zadania'})
-      }
-      cb()
     })
   },
 
@@ -661,5 +690,20 @@ module.exports = {
     }
 
     request.send(JSON.stringify(query))
+  },
+
+  setInstagram: function(context, data) {
+    request
+      .post('/instagram')
+      .send({ username: data.instagram.username })
+      .end(function(err, resp){
+        if(err) {
+          context.dispatch('SAVE_FLASH_FAILURE', 'Błąd: Podany użytkownik nie został znaleziony.')
+        } else if (resp.body.result) {
+          context.dispatch('LOAD_VOLUNTEER', data)
+        } else {
+          context.dispatch('SAVE_FLASH_FAILURE', 'Wystąpił nieznany błąd.')
+        }
+      })
   }
 }
